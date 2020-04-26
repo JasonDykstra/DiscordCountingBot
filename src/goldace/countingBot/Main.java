@@ -11,12 +11,10 @@ public class Main {
     public static String prefix = "~";
 
     public static void main(String[] args) throws LoginException {
-        String token = "Taken out so nobody hacks my bot";
+        String token = "hidden";
         jda = new JDABuilder(AccountType.BOT)
                 .setToken(token)
                 .addEventListeners(new Commands())
                 .build();
-
-
     }
 }

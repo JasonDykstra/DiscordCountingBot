@@ -4,6 +4,8 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageHistory;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
@@ -12,45 +14,29 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Commands extends ListenerAdapter {
-    public void onGuildMessageReceived(GuildMessageReceivedEvent event){
+    public void onMessageReceived(MessageReceivedEvent event){
         String[] args = event.getMessage().getContentRaw().split("\\s+");
 
-        if(args[0].equalsIgnoreCase(Main.prefix + "stats")){
-
-            //get the counting channel
-            TextChannel channel = null;
-            for(TextChannel t : Main.jda.getTextChannels()){
-                if(t.getName().contains("count")) channel = t;
+        //send myself a private message when the count reaches any multiple of 100 + 90 so i know its time to start sniping that 100
+        if(event.getChannel().getName().contains("count")){
+            if(args[0].matches("^[0-9]*$")) {
+                User goldace = Main.jda.getUserById("hidden");
+                if (Integer.parseInt(args[0]) % 100 == 90) {
+                    String msg = "Get ready to snipe!";
+                    sendPrivateMessage(goldace, msg, event);
+                }
             }
 
-            //get the message history of counting channel
-            List<Message> messages = new ArrayList<Message>();
-            MessageHistory history = channel.getHistory();
-            int amount = 0;
-
-            //amount = Integer.parseInt(history.getRetrievedHistory().get(0).getContentDisplay());
-            System.out.println(amount);
-            //have to do this weird thing with an array list because you can't assign a value to an integer
-            //while in a lambda function unless it is declared final
-            //ArrayList<Integer> amount = new ArrayList<Integer>();
-
-//            channel.retrieveMessageById(channel.getLatestMessageId()).queue((message) -> {
-//                System.out.println("adding this to list: " + Integer.parseInt(message.getContentDisplay()));
-//                amount.add(Integer.parseInt(message.getContentDisplay()));
-//            });
-
-            //System.out.println("amount" + amount.get(0));
-
-            //Make the embed for stats
-            EmbedBuilder stats = new EmbedBuilder();
-            stats.setTitle("Counting Stats");
-            stats.addField("Test Title 1", "cool info", false);
-
-            event.getChannel().sendMessage(stats.build()).queue();
         }
 
-        if(args[0].equalsIgnoreCase("test")){
+        if(event.getMessage().getContentRaw().equalsIgnoreCase("test")){
             event.getChannel().sendMessage("Worked").queue();
         }
+    }
+
+
+
+    public void sendPrivateMessage(User user, String msg, MessageReceivedEvent event){
+        user.openPrivateChannel().queue((channel) -> channel.sendMessage(msg).queue());
     }
 }
